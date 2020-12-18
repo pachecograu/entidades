@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html ng-app="upload">
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="angular-1.5.5/angular.min.js" charset="utf-8"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous">
+  </script>
+
+  <script src="config.js" charset="utf-8"></script>
+  <script src="modules.js" charset="utf-8"></script>
+  <script src="controller.js" charset="utf-8"></script>
+  <script src="directive.js" charset="utf-8"></script>
+</head>
+
+<body ng-controller="masterCtrl" style="font-size: 12px !important;">
+
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">
+          ENTIDADES
+        </a>
+      </div>
+      <form class="navbar-form navbar-left" ng-show="!nameUser">
+        <div class="form-group">
+          <label class="sr-only" for="exampleInputEmail3">Id de la cuenta</label>
+          <input type="text" class="form-control" placeholder="Id"
+            ng-model="credentials.idAccount">
+        </div>
+        <div class="form-group">
+          <label class="sr-only" for="exampleInputEmail3">Usuario</label>
+          <input type="email" class="form-control" placeholder="Usuario"
+            ng-model="credentials.username">
+        </div>
+        <div class="form-group">
+          <label class="sr-only" for="exampleInputPassword3">Contraseña</label>
+          <input type="password" class="form-control" placeholder="Contraseña"
+            ng-model="credentials.password">
+        </div>
+        <button type="submit" class="btn btn-default" ng-click="loginUser()">Iniciar</button>
+      </form>
+      <ul class="nav navbar-nav" ng-show="nameUser && nameUser != null">
+        <li><a>{{nameUser}}</a></li>
+      </ul>
+      <form class="navbar-form navbar-right" ng-show="nameUser && nameUser != null">
+        <button type="submit" class="btn btn-default" ng-click="logout()">Salir</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="row">
+    <div class="">
+      <div class="col-xs-1" style="position: absolute;z-index: 1;height:100%">
+        <div class="panel panel-default">
+          <div class="panel-body" style="padding: 7px;text-align: center;">
+            <div data-toggle="tooltip" data-placement="right" title="Crear entidad" ng-click="createEntity()">
+              <span class="glyphicon glyphicon-list-alt" aria-hidden="true" style="font-size: 27px;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-12" style="position: absolute;z-index: 0;">
+      <span my-draggable ng-repeat="entity in entities track by $index" id="{{entity._id}}" info="entity"></span>
+    </div>
+    <div ng-show="showViewConfig == true">
+      <div class="col-xs-3" style="position: absolute;right:0px;z-index: 1;height:100%;padding-right: 0px;">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              Panel de configuracion
+              <div style="float:right">
+                <a ng-click="closeConfig()" class="glyphicon glyphicon-remove" aria-hidden="true"></a>
+              </div>
+            </h3>
+          </div>
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th style="width:120px">Campo</th>
+                <th>
+                  Valor
+                  <button type="button" class="btn btn-primary btn-xs" style="float:right"
+                    ng-hide="objectSelected.object._id || objectSelected.type == 'entity'" ng-click="saveField(objectSelected)">Aplicar</button>
+                  <button type="button" class="btn btn-primary btn-xs" style="float:right"
+                    ng-show="objectSelected.object._id && objectSelected.type == 'field'" ng-click="saveChangesField(objectSelected)">Aplicar</button>
+                  <button type="button" class="btn btn-primary btn-xs" style="float:right"
+                    ng-show="objectSelected.type == 'entity'"
+                    ng-click="saveChangesEntity(objectSelected)">Aplicar</button>
+                </th>
+              </tr>
+            </thead>
+            <tbody ng-show="objectSelected.type == 'entity'">
+              <tr>
+                <td>Nombre</td>
+                <td ng-dblclick="edit()">
+                  <span ng-hide="showEdit">{{objectSelected.object.name}}</span>
+                  <input type="text" class="form-control input-sm" ng-model="objectSelected.object.name"
+                    ng-show="showEdit" placeholder="Digite">
+                </td>
+              </tr>
+              <tr>
+                <td>Posicion x</td>
+                <td>{{objectSelected.object.x}}</td>
+              </tr>
+              <tr>
+                <td>Posicion y</td>
+                <td>{{objectSelected.object.y}}</td>
+              </tr>
+            </tbody>
+            <tbody ng-show="objectSelected.type == 'field'">
+              <tr>
+                <td>Id</td>
+                <td>{{objectSelected.object._id}}</td>
+              </tr>
+              <tr>
+                <td>Nombre</td>
+                <td ng-dblclick="edit()">
+                  <span ng-hide="showEdit">{{objectSelected.object.name}}</span>
+                  <input type="text" class="form-control input-sm" ng-model="objectSelected.object.name"
+                    ng-show="showEdit" placeholder="Digite">
+                </td>
+              </tr>
+              <tr>
+                <td>Tipo</td>
+                <td ng-dblclick="edit()">
+                  <span ng-hide="showEdit">{{objectSelected.object.type}}</span>
+                  <select class="form-control input-sm" ng-model="objectSelected.object.type" ng-show="showEdit">
+                    <option value="" selected>Seleccione</option>
+                    <option ng-repeat="type in ['String', 'Number', 'Date', 'Boolean'] track by $index"
+                      value="{{type}}">{{type}}</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="position: fixed;bottom: -19px;left: 0px;width: 100%;z-index: 1;" ng-show="showTable">
+      <div class="col-xs-12" style="padding: 0px;">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <div class="row" style="margin: 0px;">
+                <div style="float:left">
+                  Tabla {{infoTable.name}}
+                </div>
+                <div style="float: left;border: 0.7px solid #32708f;height: 19px;margin: 0px 16px;"></div>
+                <div style="float:left;" ng-click="addData()">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                </div>
+                <div style="float:left;margin-left:10px">
+                  <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                </div>
+                <div style="float: left;border: 0.7px solid #32708f;height: 19px;margin: 0px 16px;"></div>
+                <div style="float:left;">
+                  <input class="form-control input-sm" style="height: 21px;" type="text" placeholder="Busqueda..."
+                    ng-model="qDataTable">
+                </div>
+                <div style="float:right">
+                  <div class="row">
+                    <div class="col-sm-8">
+                      <button type="button" class="btn btn-primary btn-xs" ng-click="addDataModels(infoTable)"
+                        ng-show="showAdd">Guardar cambios</button>
+                    </div>
+                    <div class="col-sm-4">
+                      <a ng-click="viewTable()" class="glyphicon glyphicon-remove" aria-hidden="true"></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </h3>
+          </div>
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th></th>
+                <th ng-repeat="head in infoTable.fields track by $index">{{head.name}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="row in dataTable.rows | filter: qDataTable track by $index">
+                <td style="vertical-align: middle;">
+                  <div class="checkbox" style="margin:0px">
+                    <label style="padding: 0px;margin: 0px;min-height: 10px !important;">
+                      <input type="checkbox" id="blankCheckbox" value="option1" aria-label="..." style="margin:0px">
+                    </label>
+                  </div>
+                </td>
+                <td ng-repeat="field in infoTable.fields track by $index">
+                  <div ng-repeat="value in row.data track by $index" ng-dblclick="editRow(infoTable.fields, row)" ng-if="field._id == value.field">
+                    <span ng-hide="row.showEditRow">{{value.value}}</span>
+                    <span ng-show="row.showEditRow">
+                        <input type="text" class="form-control input-sm" ng-model="value.editVal" ng-if="field.type == 'String'" placeholder="Digite">
+                        <input type="number" class="form-control input-sm" ng-model="value.editVal" ng-if="field.type == 'Number'" placeholder="Digite">
+                        <select class="form-control" ng-model="value.editVal" ng-if="field.type == 'Boolean'">
+                            <option value="">- Seleccione -</option>
+                            <option value="true">Verdadero</option>
+                            <option value="false">Falso</option>
+                          </select>
+                          <input type="date" class="form-control input-sm" ng-model="value.editVal" ng-if="field.type == 'Date'">
+                    </span>
+                  </div>
+                  <div ng-if="!row.data[$index].field" ng-init="row.data[$index].field = field._id">
+                      <input type="text" class="form-control input-sm" ng-model="row.data[$index].editVal" ng-if="field.type == 'String'" placeholder="Digite">
+                      <input type="number" class="form-control input-sm" ng-model="row.data[$index].editVal" ng-if="field.type == 'Number'" placeholder="Digite">
+                      <select class="form-control" ng-model="row.data[$index].editVal" ng-if="field.type == 'Boolean'">
+                          <option value="">- Seleccione -</option>
+                          <option value="true">Verdadero</option>
+                          <option value="false">Falso</option>
+                        </select>
+                        <input type="date" class="form-control input-sm" ng-model="row.data[$index].editVal" ng-if="field.type == 'Date'">
+                  </div>
+                </td>
+              </tr>
+              <tr ng-show="showAdd">
+                <td style="vertical-align: middle;">
+                  <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                </td>
+                <td ng-repeat="head in infoTable.fields track by $index">
+                    <input type="text" class="form-control input-sm" ng-model="head.input" ng-if="head.type == 'String'" placeholder="Digite">
+                    <input type="number" class="form-control input-sm" ng-model="head.input" ng-if="head.type == 'Number'" placeholder="Digite">
+                    <select class="form-control" ng-model="head.input" ng-if="head.type == 'Boolean'">
+                        <option value="">- Seleccione -</option>
+                        <option value="true">Verdadero</option>
+                        <option value="false">Falso</option>
+                      </select>
+                      <input type="date" class="form-control input-sm" ng-model="head.input" ng-if="head.type == 'Date'">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="panel-body" ng-hide="dataTable.rows.length > 0">
+            <div style="text-align: center;">
+              No existen resultados
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+      $('[data-toggle="popover"]').popover();
+    });
+  </script>
+
+</body>
+
+</html>

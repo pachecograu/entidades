@@ -1,0 +1,35 @@
+<div class="panel panel-default" style="width:250px;position: absolute;">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+    <div class="row">
+      <div class="col-xs-10">
+        {{customerInfo.name}}
+      </div>
+      <div class="col-xs-1">
+        <span class="glyphicon glyphicon-option-vertical dropdown-toggle" aria-hidden="true" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></span>
+        <ul class="dropdown-menu">
+          <li><a ng-click="showConfig(customerInfo, 'entity', customerInfo._id)">Configurar tabla</a></li>
+          <li><a ng-click="addField(customerInfo)">Agregar campo</a></li>
+          <li><a ng-click="viewData(customerInfo)">Ver Registros</a></li>
+          <li role="separator" class="divider"></li>
+          <li><a ng-click="deleteModel(customerInfo._id)">Eliminar tabla</a></li>
+        </ul>
+      </div>
+    </div>
+  </h3>
+  </div>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Campo</th>
+        <th>Tipo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="field in customerInfo.fields track by $index" ng-click="selectField(field, 'field', customerInfo._id)">
+        <td>{{field.name}}</td>
+        <td>{{field.type}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
